@@ -22,7 +22,7 @@ function checkdData (schema, data) {
         return false
     };
 
-    return true
+    return true;
 }
 
 module.exports = {

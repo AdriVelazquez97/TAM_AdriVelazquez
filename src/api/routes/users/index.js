@@ -1,7 +1,8 @@
 const express = require('express');
 const boom = require('boom')
-
+const _ = require('lodash')
 const { ObjectId } = require('mongodb')
+const bcrypt = require('bcrypt')
 
 const { userSchemaPost, userSchemaPut } = require('../../models/users');
 const { checkdData, checkIfExists } = require('../../helper')
@@ -10,16 +11,19 @@ module.exports = (mongoService) => {
 
     const app = express();
     const usercollection = mongoService.collection('users')
-
+    const hideProperties = {
+        password: 0
+    }
 
     app.get('/', (req, res, next) => {
-        usercollection.find().toArray()
+        usercollection.find({}).toArray()
         .then(result => {
             res.json({
                 result,
+                count: Object.keys(result).length
             })
         })
-        .catch(err => res.json(err))
+        .catch(err => console.log(err))
     });
 
     app.get('/:id', (req, res) => {
@@ -33,14 +37,16 @@ module.exports = (mongoService) => {
             _id: ObjectId(id)
         }
 
-        usercollection.findOne(filter)
+        usercollection.findOne(filter, hideProperties)
             .then((result) => {
                 res.json({
-                    user: result 
+                    result
                 })
             })
             .catch((err) => console.log(err))
     })
+
+    // Create search with params
 
     app.post('/', async (req, res, next) => {
         const { user } = req.body;
@@ -61,6 +67,8 @@ module.exports = (mongoService) => {
             return res.json(boom.badRequest('Duplicate entrie'))
         }
 
+        //user.password = bcrypt.hashSync(user.password, 10)
+
         usercollection.insertOne(user)
         .then((result) => {  
             res.json({
@@ -69,7 +77,7 @@ module.exports = (mongoService) => {
                 msg: "User inserted succesfully"
             })
         })
-        .catch((err) => res.json(err))  
+        .catch((err) => console.log(err))  
     });
 
     app.put('/:id', async (req, res) => {
@@ -106,7 +114,7 @@ module.exports = (mongoService) => {
                 msg: "User updated succesfully"
             })
         })
-        .catch((err) => res.json(err))
+        .catch((err) => console.log(err))
     });
 
     app.delete('/:id', async (req, res, next) => {
@@ -133,7 +141,7 @@ module.exports = (mongoService) => {
                 msg: "User deleted succesfully"
             })
         })
-        .catch((err) => res.json(err))
+        .catch((err) => console.log(err))
     })
 
     return app;
