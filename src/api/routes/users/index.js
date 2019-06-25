@@ -16,7 +16,7 @@ module.exports = (mongoService) => {
     }
 
     app.get('/', (req, res, next) => {
-        usercollection.find({}).toArray()
+        usercollection.find({}, hideProperties).toArray()
         .then(result => {
             res.json({
                 result,
