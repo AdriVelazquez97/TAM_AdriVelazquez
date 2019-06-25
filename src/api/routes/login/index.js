@@ -24,7 +24,7 @@ module.exports = (mongoService) => {
         usercollection.findOne(query, hideProperties )
         .then(result => {
             if(_.isEmpty(result)){
-                res.json(boom.badRequest('User or password incorrect'))
+                return res.json(boom.badRequest('User or password incorrect'))
             }
 
             const token = jwt.sign({

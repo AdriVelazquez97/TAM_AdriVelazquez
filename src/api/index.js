@@ -8,7 +8,9 @@ module.exports = (mongoService) => {
     const app = express();
 
     app.use(checkToken)
-    app.use('/users', checkPermisions, userDef(mongoService))
+    app.use('/users', (req, res, next) => {
+        checkPermisions(mongoService, req, res, next)
+    }, userDef(mongoService))
 
     return app;
 }
