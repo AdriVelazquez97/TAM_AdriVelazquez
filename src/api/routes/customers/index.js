@@ -60,7 +60,7 @@ module.exports = (mongoService) => {
             return res.json(boom.badRequest('Duplicate entrie'))
         }
 
-        customer.creationUser = req.user.email
+        customer.createdBy = req.user.email
 
         customersCollection.insertOne(customer)
         .then((result) => {  
@@ -98,7 +98,7 @@ module.exports = (mongoService) => {
             return res.json(boom.badRequest('Customer not found'))
         }
 
-        customer.lastUpdate = req.user.email
+        customer.updatedBy = req.user.email
 
         const query = {
             $set: customer,
