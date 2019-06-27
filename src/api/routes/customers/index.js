@@ -57,7 +57,7 @@ module.exports = (mongoService) => {
             })
             .catch((err) => console.log(err))
     })
-/*
+
     app.post('/search', async (req, res, next) => {
         const searchParams = _.get(req.body, 'searchParams', {})
         const skip = _.get(req.query, 'skip', defaultProperties.skip)
@@ -70,11 +70,10 @@ module.exports = (mongoService) => {
         }
 
         const querySearch = createQuerySearch(searchParams)
-        return res.json(querySearch)
 
-        customersCollection.count()
+        customersCollection.count(querySearch)
         .then(count => {
-            customersCollection.find(searchParams).skip(skipParset).limit(limitParset).toArray()
+            customersCollection.find(querySearch).skip(skipParset).limit(limitParset).toArray()
             .then(result => {
                 res.json({
                     result,
@@ -85,7 +84,6 @@ module.exports = (mongoService) => {
         }) 
         .catch((err) => console.log(err))
     })
-    */
 
     app.post('/', async (req, res, next) => {
         const { customer } = req.body;
