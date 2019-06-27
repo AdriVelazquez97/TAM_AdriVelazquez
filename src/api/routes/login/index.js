@@ -23,7 +23,7 @@ module.exports = (mongoService) => {
 
             const token = jwt.sign({
                 user: result
-            }, process.env.SEED, {expiresIn: 60 * 60 * 24 * 7})
+            }, 'seed-dev', {expiresIn: 60 * 60 * 24 * 7})
 
             res.json({
                 msg: 'Login succesfully',
