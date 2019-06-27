@@ -86,11 +86,11 @@ module.exports = (mongoService) => {
     })
 
     app.post('/', async (req, res, next) => {
-        const { customer } = req.body;
+        const customer = _.get(req.body, 'customer', {})
         
         const dataCheked = await checkdData(customerSchemaPost, customer)
 
-        if(!dataCheked) { 
+        if(!dataCheked || _.isEmpty(customer)) { 
             return res.json(boom.badRequest('Invalid Data'))
         }
 
@@ -119,7 +119,7 @@ module.exports = (mongoService) => {
     });
 
     app.put('/:id', async (req, res) => {
-        const { customer } = req.body;
+        const customer = _.get(req.body, 'customer', {})
         const { id } = req.params;
 
         if(id.length != 24){
@@ -128,7 +128,7 @@ module.exports = (mongoService) => {
         
         const dataCheked = await checkdData(customerSchemaPut, customer)
 
-        if(!dataCheked) { 
+        if(!dataCheked || _.isEmpty(customer)) { 
             return res.json(boom.badRequest('Invalid Data'))
         }
 
