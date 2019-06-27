@@ -1,22 +1,17 @@
 const express = require('express');
 const boom = require('boom')
-const _ = require('lodash')
 const { ObjectId } = require('mongodb')
-const bcrypt = require('bcrypt')
 
-const { userSchemaPost, userSchemaPut } = require('../../models/users');
+const { customerSchemaPost, customerSchemaPut } = require('../../models/customers');
 const { checkdData, checkIfExists } = require('../../helper')
 
 module.exports = (mongoService) => {
 
     const app = express();
-    const userscollection = mongoService.collection('users')
-    const hideProperties = {
-        password: 0
-    }
+    const customersCollection = mongoService.collection('customers')
 
     app.get('/', (req, res, next) => {
-        userscollection.find({}, hideProperties).toArray()
+        customersCollection.find({}).toArray()
         .then(result => {
             res.json({
                 result,
@@ -25,7 +20,7 @@ module.exports = (mongoService) => {
         })
         .catch(err => console.log(err))
     });
-
+    
     app.get('/:id', (req, res) => {
         const { id } = req.params;
 
@@ -37,7 +32,7 @@ module.exports = (mongoService) => {
             _id: ObjectId(id)
         }
 
-        userscollection.findOne(filter, hideProperties)
+        customersCollection.findOne(filter)
             .then((result) => {
                 res.json({
                     result
@@ -46,49 +41,48 @@ module.exports = (mongoService) => {
             .catch((err) => console.log(err))
     })
 
-    // Create search with params
-
     app.post('/', async (req, res, next) => {
-        const { user } = req.body;
+        const { customer } = req.body;
         
-        const dataCheked = await checkdData(userSchemaPost, user)
+        const dataCheked = await checkdData(customerSchemaPost, customer)
 
         if(!dataCheked) { 
             return res.json(boom.badRequest('Invalid Data'))
         }
 
         const queryCheck = {
-            email: user.email,
+            email: customer.email,
         }
 
-        const valideIfExists = await checkIfExists(queryCheck, userscollection)
+        const valideIfExists = await checkIfExists(queryCheck, customersCollection)
 
         if(valideIfExists){
             return res.json(boom.badRequest('Duplicate entrie'))
         }
 
-        //user.password = bcrypt.hashSync(user.password, 10)
+        customer.emailUser = req.user.email
 
-        userscollection.insertOne(user)
+        customersCollection.insertOne(customer)
         .then((result) => {  
             res.json({
                 result,
-                user,
-                msg: "User inserted succesfully"
+                customer,
+                msg: "Customer inserted succesfully"
             })
         })
         .catch((err) => console.log(err))  
+
     });
 
     app.put('/:id', async (req, res) => {
-        const { user } = req.body;
+        const { customer } = req.body;
         const { id } = req.params;
 
         if(id.length != 24){
             return res.json(boom.badRequest('Invalid filter'))
         }
         
-        const dataCheked = await checkdData(userSchemaPut, user)
+        const dataCheked = await checkdData(customerSchemaPut, customer)
 
         if(!dataCheked) { 
             return res.json(boom.badRequest('Invalid Data'))
@@ -98,20 +92,24 @@ module.exports = (mongoService) => {
             _id: ObjectId(id)
         }
 
-        const valideIfExists = await checkIfExists(filter, userscollection)
+        const valideIfExists = await checkIfExists(filter, customersCollection)
 
         if(!valideIfExists){
-            return res.json(boom.badRequest('User not found'))
-        }
-        const query = {
-            $set: user,
+            return res.json(boom.badRequest('Customer not found'))
         }
 
-        userscollection.updateOne(filter, query)
+        customer.emailUser = req.user.email
+
+        const query = {
+            $set: customer,
+        }
+
+
+        customersCollection.updateOne(filter, query)
         .then(result => {
             res.json({
                 result,
-                msg: "User updated succesfully"
+                msg: "Customer updated succesfully"
             })
         })
         .catch((err) => console.log(err))
@@ -128,21 +126,21 @@ module.exports = (mongoService) => {
             _id: ObjectId(id)
         }
 
-        const valideIfExists = await checkIfExists(filter, userscollection)
+        const valideIfExists = await checkIfExists(filter, customersCollection)
         
         if(!valideIfExists){
-            return res.json(boom.badRequest('Entrie not found'))
+            return res.json(boom.badRequest('Customer not found'))
         }
 
-        userscollection.deleteOne(filter)
+        customersCollection.deleteOne(filter)
         .then(result => {
             res.json({
                 result,
-                msg: "User deleted succesfully"
+                msg: "Customer deleted succesfully"
             })
         })
         .catch((err) => console.log(err))
     })
 
-    return app;
-}   
+    return app
+}
