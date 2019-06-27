@@ -52,7 +52,7 @@ module.exports = (mongoService) => {
         customersCollection.findOne(filter)
             .then((result) => {
                 res.json({
-                    result
+                    customer: result
                 })
             })
             .catch((err) => console.log(err))
@@ -76,7 +76,7 @@ module.exports = (mongoService) => {
             customersCollection.find(querySearch).skip(skipParset).limit(limitParset).toArray()
             .then(result => {
                 res.json({
-                    result,
+                    customers: result,
                     count
                 })
             })

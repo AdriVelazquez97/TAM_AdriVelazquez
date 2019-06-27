@@ -11,6 +11,8 @@ module.exports = (mongoService) => {
 
     const app = express();
     const userscollection = mongoService.collection('users')
+    const customersCollection = mongoService.collection('customers')
+
     const hideProperties = {
         password: 0
     }
@@ -56,9 +58,14 @@ module.exports = (mongoService) => {
 
         userscollection.findOne(filter, hideProperties)
             .then((result) => {
-                res.json({
-                    result
-                })
+                customersCollection.find({createdby: result.email}).toArray()
+                    .then(values => {
+                        res.json({
+                            user: result,
+                            customersCreated: values
+                        })
+                    })
+                    .catch((err) => console.log(err))
             })
             .catch((err) => console.log(err))
     })
@@ -81,7 +88,7 @@ module.exports = (mongoService) => {
             userscollection.find(querySearch).skip(skipParset).limit(limitParset).toArray()
             .then(result => {
                 res.json({
-                    result,
+                    users: result,
                     count
                 })
             })
