@@ -5,7 +5,7 @@ const { ObjectId } = require('mongodb')
 const bcrypt = require('bcrypt')
 
 const { userSchemaPost, userSchemaPut } = require('../../models/users');
-const { checkdData, checkIfExists } = require('../../helper')
+const { checkdData, checkIfExists, createQuerySearch } = require('../../helper')
 
 module.exports = (mongoService) => {
 
@@ -14,16 +14,33 @@ module.exports = (mongoService) => {
     const hideProperties = {
         password: 0
     }
+    const defaultProperties = {
+        skip: 0,
+        limit: 10
+    }
 
     app.get('/', (req, res, next) => {
-        userscollection.find({}, hideProperties).toArray()
-        .then(result => {
-            res.json({
-                result,
-                count: Object.keys(result).length
+        const skip = _.get(req.query, 'skip', defaultProperties.skip)
+        const limit = _.get(req.query, 'limit', defaultProperties.limit)
+        const skipParset = parseInt(skip);
+        const limitParset = parseInt(limit);
+
+        if(_.isNaN(skipParset) || _.isNaN(limitParset)){
+            return res.json(boom.badData('Invalid values for skip and limit'))
+        }
+
+        userscollection.count()
+        .then(count => {
+            userscollection.find({}, hideProperties).skip(skipParset).limit(limitParset).toArray()
+            .then(result => {
+                res.json({
+                    result,
+                    count
+                })
             })
-        })
-        .catch(err => console.log(err))
+            .catch(err => console.log(err))
+        }) 
+        .catch((err) => console.log(err))
     });
 
     app.get('/:id', (req, res) => {
@@ -46,7 +63,32 @@ module.exports = (mongoService) => {
             .catch((err) => console.log(err))
     })
 
-    // Create search with params
+    app.post('/search', async (req, res, next) => {
+        const searchParams = _.get(req.body, 'searchParams', {})
+        const skip = _.get(req.query, 'skip', defaultProperties.skip)
+        const limit = _.get(req.query, 'limit', defaultProperties.limit)
+        const skipParset = parseInt(skip);
+        const limitParset = parseInt(limit);
+
+        if(_.isNaN(skipParset) || _.isNaN(limitParset)){
+            return res.json(boom.badData('Invalid values for skip and limit'))
+        }
+
+        const querySearch = createQuerySearch(searchParams)
+
+        userscollection.count(querySearch)
+        .then(count => {
+            userscollection.find(querySearch).skip(skipParset).limit(limitParset).toArray()
+            .then(result => {
+                res.json({
+                    result,
+                    count
+                })
+            })
+            .catch(err => console.log(err))
+        }) 
+        .catch((err) => console.log(err))
+    })
 
     app.post('/', async (req, res, next) => {
         const { user } = req.body;
