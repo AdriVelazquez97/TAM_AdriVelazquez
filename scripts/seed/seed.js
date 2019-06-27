@@ -1,4 +1,5 @@
 const { MongoClient } = require('mongodb');
+const bcrypt = require('bcrypt')
 
 const userData = require('./userData');
 const {
@@ -14,12 +15,15 @@ async function seed() {
     
     const userCollection = db.collection('users')
 
+    userData.map(value =>{
+        value.password = bcrypt.hashSync(value.password, 10)
+    })
+
     await userCollection.insertMany(userData)
         .then(() => console.log("Inserted successfully"))
         .catch(() => {console.log('err')})
 
     process.exit(0);
-
 }
 
 seed()

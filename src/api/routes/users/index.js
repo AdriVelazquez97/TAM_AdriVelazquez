@@ -67,7 +67,8 @@ module.exports = (mongoService) => {
             return res.json(boom.badRequest('Duplicate entrie'))
         }
 
-        //user.password = bcrypt.hashSync(user.password, 10)
+        const passwordEncrypted = bcrypt.hashSync(user.password, 10)
+        user.password = passwordEncrypted
 
         userscollection.insertOne(user)
         .then((result) => {  
@@ -77,7 +78,8 @@ module.exports = (mongoService) => {
                 msg: "User inserted succesfully"
             })
         })
-        .catch((err) => console.log(err))  
+        .catch((err) => console.log(err))
+
     });
 
     app.put('/:id', async (req, res) => {

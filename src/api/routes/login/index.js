@@ -10,20 +10,14 @@ module.exports = (mongoService) => {
 
     app.post('/', (req, res, next) => {
         const { email, password } = req.body
-
+        
         const query = {
-            $and: [
-                {email},
-                {password}
-            ]
-        }
-        const hideProperties = {
-            password: 0
+            email
         }
 
-        usercollection.findOne(query, hideProperties )
+        usercollection.findOne(query)
         .then(result => {
-            if(_.isEmpty(result)){
+            if(_.isEmpty(result) || !bcrypt.compareSync(password, result.password)){
                 return res.json(boom.badRequest('User or password incorrect'))
             }
 
