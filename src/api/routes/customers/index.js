@@ -140,7 +140,6 @@ module.exports = (mongoService) => {
             return res.json(boom.badRequest('User not found'))
         }
 
-
         const validExtensions = ['png', 'jpg', 'jpeg']
         const sampleFile = req.files.photo;
         const sampleFileSplited = sampleFile.name.split('.')

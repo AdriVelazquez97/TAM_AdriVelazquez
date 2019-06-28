@@ -58,6 +58,9 @@ module.exports = (mongoService) => {
 
         userscollection.findOne(filter, hideProperties)
             .then((result) => {
+                if(_.isEmpty(result)){
+                    return res.json(boom.badRequest('User not found'))
+                }
                 customersCollection.find({createdby: result.email}).toArray()
                     .then(values => {
                         res.json({
@@ -152,7 +155,6 @@ module.exports = (mongoService) => {
         if(!valideIfExists){
             return res.json(boom.badRequest('User not found'))
         }
-
 
         const validExtensions = ['png', 'jpg', 'jpeg']
         const sampleFile = req.files.photo;
