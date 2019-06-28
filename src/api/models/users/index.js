@@ -7,7 +7,7 @@ const userSchemaPost = {
         email: {
             type: 'string'
         },
-        img: {
+        photo: {
             type: 'string'
         },
         password: {
@@ -32,7 +32,7 @@ const userSchemaPut = {
         email: {
             type: 'string'
         },
-        img: {
+        photo: {
             type: 'string'
         },
         password: {
