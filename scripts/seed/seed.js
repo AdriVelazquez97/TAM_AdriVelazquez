@@ -1,6 +1,9 @@
 const { MongoClient } = require('mongodb');
 const bcrypt = require('bcrypt')
 
+const fs = require('fs');
+const path = require('path');
+
 const userData = require('./userData');
 const customersData = require('./customersData')
 
@@ -8,6 +11,19 @@ const {
     DB_NAME = 'TAM',
     MONGO_DB_URI = 'mongodb://localhost:27017',
 } = process.env;
+
+function cleanUploadDirectory(directory) {
+
+    fs.readdir(directory, (err, files) => {
+        if (err) throw err;
+
+        for (const file of files) {
+            fs.unlink(path.join(directory, file), err => {
+            if (err) throw err;
+            });
+        }
+    });
+}
 
 async function seed() {
     const mongoUrl = `${MONGO_DB_URI}/${DB_NAME}`;
@@ -21,6 +37,9 @@ async function seed() {
     userData.map(value =>{
         value.password = bcrypt.hashSync(value.password, 10)
     })
+
+    cleanUploadDirectory('uploads/users');
+    cleanUploadDirectory('uploads/customers');
 
     await userCollection.insertMany(userData)
         .then(() => console.log("Inserted Users successfully"))
