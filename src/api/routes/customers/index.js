@@ -5,6 +5,8 @@ const _ = require('lodash')
 const { customerSchemaPost, customerSchemaPut } = require('../../models/customers');
 const { checkdData, checkIfExists, createQuerySearch } = require('../../helper')
 
+const { basicSearch, searchById, searchWithFilters } = require('../../queries');
+
 module.exports = (mongoService) => {
 
     const app = express();
@@ -14,76 +16,9 @@ module.exports = (mongoService) => {
         limit: 10
     }
 
-    app.get('/', (req, res, next) => {
-        const skip = _.get(req.query, 'skip', defaultProperties.skip)
-        const limit = _.get(req.query, 'limit', defaultProperties.limit)
-        const skipParset = parseInt(skip);
-        const limitParset = parseInt(limit);
-
-        if(_.isNaN(skipParset) || _.isNaN(limitParset)){
-            return res.json(boom.badData('Invalid values for skip and limit'))
-        }
-
-        customersCollection.count()
-        .then(count => {
-            customersCollection.find({}).skip(skipParset).limit(limitParset).toArray()
-            .then(result => {
-                res.json({
-                    result,
-                    count
-                })
-            })
-            .catch(err => console.log(err))
-        }) 
-        .catch((err) => console.log(err))
-    });
-
-    app.get('/:id', (req, res) => {
-        const { id } = req.params;
-
-        if(id.length != 24){
-            return res.json(boom.badRequest('Invalid filter'))
-        }
-
-        const filter = {
-            _id: ObjectId(id)
-        }
-
-        customersCollection.findOne(filter)
-            .then((result) => {
-                res.json({
-                    customer: result
-                })
-            })
-            .catch((err) => console.log(err))
-    })
-
-    app.post('/search', async (req, res, next) => {
-        const searchParams = _.get(req.body, 'searchParams', {})
-        const skip = _.get(req.query, 'skip', defaultProperties.skip)
-        const limit = _.get(req.query, 'limit', defaultProperties.limit)
-        const skipParset = parseInt(skip);
-        const limitParset = parseInt(limit);
-
-        if(_.isNaN(skipParset) || _.isNaN(limitParset)){
-            return res.json(boom.badData('Invalid values for skip and limit'))
-        }
-
-        const querySearch = createQuerySearch(searchParams)
-
-        customersCollection.count(querySearch)
-        .then(count => {
-            customersCollection.find(querySearch).skip(skipParset).limit(limitParset).toArray()
-            .then(result => {
-                res.json({
-                    customers: result,
-                    count
-                })
-            })
-            .catch(err => console.log(err))
-        }) 
-        .catch((err) => console.log(err))
-    })
+    app.get('/', basicSearch(customersCollection, defaultProperties, {}));
+    app.get('/:id', searchById(customersCollection))
+    app.post('/search', searchWithFilters(customersCollection, defaultProperties))
 
     app.post('/', async (req, res, next) => {
         const customer = _.get(req.body, 'customer', {})
