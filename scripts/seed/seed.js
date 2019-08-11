@@ -43,8 +43,8 @@ async function seed() {
         value.password = bcrypt.hashSync(value.password, 10)
     })
 
-    cleanUploadDirectory('uploads/users');
-    cleanUploadDirectory('uploads/customers');
+    cleanUploadDirectory('uploads/Users');
+    cleanUploadDirectory('uploads/Customers');
 
     await userCollection.insertMany(userData)
         .then(() => console.log("Inserted Users successfully"))

@@ -15,7 +15,7 @@ module.exports = (mongoService) => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({extended: false}));
   app.use(cookieParser());
-  app.use( fileUpload({ useTempFiles: true }) );
+  app.use(fileUpload({ useTempFiles: true }));
 
   app.use('/api', apiDef(mongoService))
   app.use('/login', loginDef(mongoService))
