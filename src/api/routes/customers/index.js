@@ -2,10 +2,10 @@ const express = require('express');
 const boom = require('boom')
 const { ObjectId } = require('mongodb')
 const _ = require('lodash')
-const { customerSchemaPost, customerSchemaPut } = require('../../models/customers');
-const { checkdData, checkIfExists, createQuerySearch } = require('../../helper')
 
-const { basicSearch, searchById, searchWithFilters } = require('../../queries');
+const { checkdData, checkIfExists, createQuerySearch, setPropertiesReq } = require('../../helper')
+
+const { basicSearch, searchById, searchWithFilters, postEntrie, putEntrie, deleteEntrie } = require('../../queries');
 
 module.exports = (mongoService) => {
 
@@ -16,42 +16,15 @@ module.exports = (mongoService) => {
         limit: 10
     }
 
+    app.use(setPropertiesReq('Customers', 'customerSchema'))
+
     app.get('/', basicSearch(customersCollection, defaultProperties, {}));
     app.get('/:id', searchById(customersCollection))
     app.post('/search', searchWithFilters(customersCollection, defaultProperties))
 
-    app.post('/', async (req, res, next) => {
-        const customer = _.get(req.body, 'customer', {})
-        
-        const dataCheked = await checkdData(customerSchemaPost, customer)
+    app.post('/', postEntrie(customersCollection));
 
-        if(!dataCheked || _.isEmpty(customer)) { 
-            return res.json(boom.badRequest('Invalid Data'))
-        }
-
-        const queryCheck = {
-            email: customer.email,
-        }
-
-        const valideIfExists = await checkIfExists(queryCheck, customersCollection)
-
-        if(valideIfExists){
-            return res.json(boom.badRequest('Duplicate entrie'))
-        }
-
-        customer.createdBy = req.user.email
-
-        customersCollection.insertOne(customer)
-        .then((result) => {  
-            res.json({
-                result,
-                customer,
-                msg: "Customer inserted succesfully"
-            })
-        })
-        .catch((err) => console.log(err))  
-
-    });
+    app.put('/:id', putEntrie(customersCollection));
 
     app.put('/upload/:id', async(req, res, next) => {
         const files = _.get(req, 'files', {})
@@ -108,73 +81,7 @@ module.exports = (mongoService) => {
         });
     });
 
-    app.put('/:id', async (req, res) => {
-        const customer = _.get(req.body, 'customer', {})
-        const { id } = req.params;
-
-        if(id.length != 24){
-            return res.json(boom.badRequest('Invalid filter'))
-        }
-        
-        const dataCheked = await checkdData(customerSchemaPut, customer)
-
-        if(!dataCheked || _.isEmpty(customer)) { 
-            return res.json(boom.badRequest('Invalid Data'))
-        }
-
-        const filter = {
-            _id: ObjectId(id)
-        }
-
-        const valideIfExists = await checkIfExists(filter, customersCollection)
-
-        if(!valideIfExists){
-            return res.json(boom.badRequest('Customer not found'))
-        }
-
-        customer.updatedBy = req.user.email
-
-        const query = {
-            $set: customer,
-        }
-
-
-        customersCollection.updateOne(filter, query)
-        .then(result => {
-            res.json({
-                result,
-                msg: "Customer updated succesfully"
-            })
-        })
-        .catch((err) => console.log(err))
-    });
-
-    app.delete('/:id', async (req, res, next) => {
-        const { id } = req.params;
-
-        if(id.length != 24){
-            return res.json(boom.badRequest('Invalid filter'))
-        }
-
-        const filter = {
-            _id: ObjectId(id)
-        }
-
-        const valideIfExists = await checkIfExists(filter, customersCollection)
-        
-        if(!valideIfExists){
-            return res.json(boom.badRequest('Customer not found'))
-        }
-
-        customersCollection.deleteOne(filter)
-        .then(result => {
-            res.json({
-                result,
-                msg: "Customer deleted succesfully"
-            })
-        })
-        .catch((err) => console.log(err))
-    })
+    app.delete('/:id', deleteEntrie(customersCollection))
 
     return app
 }
