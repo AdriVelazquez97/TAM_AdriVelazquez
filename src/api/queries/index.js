@@ -4,6 +4,7 @@ const searchWithFilters = require('./searchWithFilters')
 const postEntrie = require('./postEntrie')
 const putEntrie = require('./putEntrie')
 const deleteEntrie = require('./deleteEntrie')
+const putImage = require('./putImage')
 
 module.exports = {
     basicSearch,
@@ -11,5 +12,6 @@ module.exports = {
     searchWithFilters,
     postEntrie,
     putEntrie,
-    deleteEntrie
+    deleteEntrie,
+    putImage
 }

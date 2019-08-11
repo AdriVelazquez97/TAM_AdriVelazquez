@@ -22,7 +22,7 @@ module.exports = (mongoCollection) => async (req, res, next) =>  {
         return res.json(boom.badRequest('Duplicate entrie'))
     }
 
-    if(req.collectionName == 'User'){
+    if(req.collectionName == 'Users'){
         const passwordEncrypted = bcrypt.hashSync(entrie.password, 10)
         entrie.password = passwordEncrypted
     }
